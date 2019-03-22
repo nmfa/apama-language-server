@@ -4,7 +4,7 @@ package com.apamademo.weather;
  * Apama DataView sample. Demonstrates the usage of the Apama DataView API
  * for creating and maintaing data tables that can be show in an Apama
  * Dashboard Studio dashboard.
- *
+ * hello
  * $Copyright (c) 2008-2009 Progress Software Corporation.  All Rights Reserved.$
  * $Copyright (c) 2013,2015-2016 Software AG, Darmstadt, Germany and/or Software AG USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates and/or their licensors.$
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Software AG

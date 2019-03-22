@@ -30,28 +30,28 @@ export function activate(context: vscode.ExtensionContext) : void  {
 	});
 
 	// The server is implemented in another project and outputted there
-	let serverModule: string = context.asAbsolutePath(path.join('server', 'server.js'));
+	let serverModule: string = context.asAbsolutePath(path.join('out','server.js'));
 	// The debug options for the server
-	let debugOptions: ForkOptions = { execArgv: ["--nolazy", "--debug=6009"] };
+	let debugOptions: ForkOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 	
 	// If the extension is launched in debug mode then the debug server options are used
 	// Otherwise the  normal ones are used
 	let serverOptions: ServerOptions = {
 		run : { module: serverModule, transport: TransportKind.ipc },
 		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
-	}
+	};
 	
 	// Options of the language client
 	let clientOptions: LanguageClientOptions = {
-		// Activate the server for DOT files
-		documentSelector: ['evt','mon'],
+		// Activate the server for epl files
+		documentSelector: ['epl'],
 		synchronize: {
 			// Synchronize the section 'dotLanguageServer' of the settings to the server
 			configurationSection: 'eplLanguageServer',
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
 		}
-	}
+	};
 	
 	// Create the language client and start the client.
 	let langServer: Disposable = new LanguageClient('dotLanguageServer', 'Language Server', serverOptions, clientOptions).start();

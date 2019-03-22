@@ -63,7 +63,7 @@ connection.onInitialize((params): InitializeResult => {
       },
       hoverProvider: true
     }
-  }
+  };
 });
 
 // The settings have changed. Is send on server activation
@@ -73,7 +73,7 @@ connection.onDidChangeConfiguration((change) => {
   maxNumberOfProblems = settings.eplLanguageServer.maxNumberOfProblems || 100;
   // Revalidate any open text documents
   documents.all().forEach(validateEplDocument);
-})
+});
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
@@ -89,33 +89,44 @@ function validateEplDocument(textDocument: TextDocument): void {
   let diagnostics: Diagnostic[] = [];
 
   // main workings of the server is here - send text for anaylsis and deal with the response
-  request.post({ url: 'http://localhost:3000/parse', body: textDocument.getText() }, function optionalCallback(err, httpResponse, body) {
-    let messages = JSON.parse(body).errors;
-    names = JSON.parse(body).names;
+  // request.post({ url: 'http://localhost:3000/parse', body: textDocument.getText() }, 
+  //   function optionalCallback(err: any, httpResponse : any, body: any ) {
+  //   let messages = JSON.parse(body).errors;
+  //   names = JSON.parse(body).names;
 
-    let lines = textDocument.getText().split(/\r?\n/g);
-    let problems = 0;
+  //   let lines = textDocument.getText().split(/\r?\n/g);
+  //   let problems = 0;
 
-    for (var i = 0; i < messages.length && problems < maxNumberOfProblems; i++) {
-      problems++;
+  //   for (var i = 0; i < messages.length && problems < maxNumberOfProblems; i++) {
+  //     problems++;
 
-      if (messages[i].length === 0) {
-        messages[i].length = lines[i].length - messages[i].character;
-      }
+  //     if (messages[i].length === 0) {
+  //       messages[i].length = lines[i].length - messages[i].character;
+  //     }
 
-      diagnostics.push({
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: { line: messages[i].line, character: messages[i].character },
-          end: { line: messages[i].line, character: messages[i].character + messages[i].length }
-        },
-        message: messages[i].message,
-        source: 'ex'
-      });
-    }
-    // Send the computed diagnostics to VSCode.
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  //     diagnostics.push({
+  //       severity: DiagnosticSeverity.Error,
+  //       range: {
+  //         start: { line: messages[i].line, character: messages[i].character },
+  //         end: { line: messages[i].line, character: messages[i].character + messages[i].length }
+  //       },
+  //       message: messages[i].message,
+  //       source: 'ex'
+  //     });
+  //   }
+  //   // Send the computed diagnostics to VSCode.
+  //   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+  // });
+  diagnostics.push({
+    severity: DiagnosticSeverity.Information,
+    range: {
+      start: {line: 1, character: 1},
+      end: {line: 1 , character: 2}
+    },
+    message: "This is fine!",
+    source: "eplbuddy"
   });
+  connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Array<CompletionItem>  => {
@@ -137,7 +148,7 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Arra
 
     let start = 0;
 
-    for (var i = position.character; i >= 0; i--) {
+    for (let i = position.character; i >= 0; i--) {
       if (lines[position.line][i] === '=') {
         start = i;
         i = 0;
@@ -145,22 +156,22 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Arra
     }
 
     if (start >= 5 && lines[position.line].substr(start - 5, 5) === "color") {
-      for (var a = 0; a < colors.length; a++) {
+      for (let a = 0; a < colors.length; a++) {
         results.push({
           label: colors[a],
           kind: CompletionItemKind.Color,
           data: 'color-' + a
-        })
+        });
       }
     }
     if (start >= 5 && lines[position.line].substr(start - 5, 5) === "shape") {
       let results = new Array<CompletionItem>();
-      for (var a = 0; a < shapes.length; a++) {
+      for (let a = 0; a < shapes.length; a++) {
         results.push({
           label: shapes[a],
           kind: CompletionItemKind.Text,
           data: 'shape-' + a
-        })
+        });
       }
     }
   }
@@ -181,7 +192,7 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   return item;
 });
 
-connection.onHover(({ textDocument, position }): Hover => {
+connection.onHover(({ textDocument, position }): Hover | undefined => {
   for (var i = 0; i < names.length; i++) {
     if (names[i].line === position.line
       && (names[i].start <= position.character && names[i].end >= position.character)) {
