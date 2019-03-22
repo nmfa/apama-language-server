@@ -1,35 +1,24 @@
 "use_strict";
-
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
 
 import { workspace, Disposable, ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, 
 	TransportKind, TextEdit,RequestType, TextDocumentIdentifier, ResponseError, 
 	InitializeError, State as ClientState, NotificationType, ForkOptions } from 'vscode-languageclient';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+//
+// client activation function, this is the entrypoint for the client
+//
 export function activate(context: vscode.ExtensionContext) : void  {
+		console.log('Started EPL language server');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-		console.log('Congratulations, your extension "apama-language-server" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let command1: Disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World!');
+	//Sample command from initial 'yo code' generation - left just in case someone wants to use it. 
+	let command1: Disposable = vscode.commands.registerCommand('extension.eplWelcome', () => {
+		vscode.window.showInformationMessage('Welcome to EPL');
 	});
 
-	// The server is implemented in another project and outputted there
+	// The server is implemented in server.ts - built when this is built
 	let serverModule: string = context.asAbsolutePath(path.join('out','server.js'));
 	// The debug options for the server
 	let debugOptions: ForkOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
@@ -46,15 +35,16 @@ export function activate(context: vscode.ExtensionContext) : void  {
 		// Activate the server for epl files
 		documentSelector: ['epl'],
 		synchronize: {
-			// Synchronize the section 'dotLanguageServer' of the settings to the server
+			// Synchronize the section 'eplLanguageServer' of the settings to the server
 			configurationSection: 'eplLanguageServer',
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			// Notify the server about file changes to epl files contained in the workspace
+			// need to think about this
+			// fileEvents: workspace.createFileSystemWatcher('**/.epl')
 		}
 	};
 	
 	// Create the language client and start the client.
-	let langServer: Disposable = new LanguageClient('dotLanguageServer', 'Language Server', serverOptions, clientOptions).start();
+	let langServer: Disposable = new LanguageClient('eplLanguageServer', 'Language Server', serverOptions, clientOptions).start();
 	
 	// Push the disposable to the context's subscriptions so that the 
 	// client can be deactivated on extension deactivation

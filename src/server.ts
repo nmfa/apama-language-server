@@ -1,5 +1,9 @@
 'use strict';
 
+//
+// Originating from a tutorial - we need to add in the comms to EPL buddy  
+//
+
 import {
   IPCMessageReader, IPCMessageWriter,
   createConnection, IConnection, TextDocumentSyncKind,
@@ -31,26 +35,29 @@ let workspaceRoot: string | null | undefined;
 
 // The settings interface describe the server relevant settings part
 interface Settings {
-  eplLanguageServer: DotSettings;
+  eplLanguageServer: EplSettings;
 }
 
 // These are the example settings we defined in the client's package.json
 // file
-interface DotSettings {
+interface EplSettings {
   maxNumberOfProblems: number;
 }
 
 // hold the maxNumberOfProblems setting
 let maxNumberOfProblems: number;
 
+// here we will need to build a list of stuff we could complete with
+//let ... : Array<string> ....
 // hold a list of colors and shapes for the completion provider
-let colors: Array<string>;
-let shapes: Array<string>;
+//let colors: Array<string>;
+//let shapes: Array<string>;
 
 connection.onInitialize((params): InitializeResult => {
   workspaceRoot = params.rootPath;
-  colors = new Array<string>();
-  shapes = new Array<string>();
+  //replace with new list of completions 
+  //colors = new Array<string>();
+  //shapes = new Array<string>();
 
   return {
     capabilities: {
@@ -117,6 +124,8 @@ function validateEplDocument(textDocument: TextDocument): void {
   //   // Send the computed diagnostics to VSCode.
   //   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
   // });
+
+  // silly example diagnostic - presents green squiggly for info
   diagnostics.push({
     severity: DiagnosticSeverity.Information,
     range: {
@@ -138,13 +147,14 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Arra
     let lines = text.split(/\r?\n/g);
     let position = textDocumentPosition.position;
 
-    if (colors.length === 0) {
-      colors = loadColors();
-    }
+    //lazy initialisation of completion items
+    //if (colors.length === 0) {
+    //  colors = loadColors();
+    //}
 
-    if (shapes.length === 0) {
-      shapes = loadShapes();
-    }
+    //if (shapes.length === 0) {
+    //  shapes = loadShapes();
+    //}
 
     let start = 0;
 
@@ -155,37 +165,45 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Arra
       }
     }
 
-    if (start >= 5 && lines[position.line].substr(start - 5, 5) === "color") {
-      for (let a = 0; a < colors.length; a++) {
-        results.push({
-          label: colors[a],
-          kind: CompletionItemKind.Color,
-          data: 'color-' + a
-        });
-      }
-    }
-    if (start >= 5 && lines[position.line].substr(start - 5, 5) === "shape") {
-      let results = new Array<CompletionItem>();
-      for (let a = 0; a < shapes.length; a++) {
-        results.push({
-          label: shapes[a],
-          kind: CompletionItemKind.Text,
-          data: 'shape-' + a
-        });
-      }
-    }
+    // if (start >= 5 && lines[position.line].substr(start - 5, 5) === "color") {
+    //   for (let a = 0; a < colors.length; a++) {
+    //     results.push({
+    //       label: colors[a],
+    //       kind: CompletionItemKind.Color,
+    //       data: 'color-' + a
+    //     });
+    //   }
+    // }
+    // if (start >= 5 && lines[position.line].substr(start - 5, 5) === "shape") {
+    //   let results = new Array<CompletionItem>();
+    //   for (let a = 0; a < shapes.length; a++) {
+    //     results.push({
+    //       label: shapes[a],
+    //       kind: CompletionItemKind.Text,
+    //       data: 'shape-' + a
+    //     });
+    //   }
+    // }
+
+    //example item.
+    results.push({
+      label: "The Label",
+      kind: CompletionItemKind.Text,
+      data: "Completion Item"
+    });
+
   }
   return results;
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  if (item.data.startsWith('color-')) {
-    item.detail = 'X11 Color';
+  if (item.data.startsWith("Completion")) {
+    item.detail = 'Example 1';
     item.documentation = 'http://www.graphviz.org/doc/info/colors.html';
   }
 
-  if (item.data.startsWith('shape-')) {
-    item.detail = 'Shape';
+  if (item.data.startsWith('Item')) {
+    item.detail = 'Example 2';
     item.documentation = 'http://www.graphviz.org/doc/info/shapes.html';
   }
 
@@ -193,32 +211,37 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 });
 
 connection.onHover(({ textDocument, position }): Hover | undefined => {
-  for (var i = 0; i < names.length; i++) {
-    if (names[i].line === position.line
-      && (names[i].start <= position.character && names[i].end >= position.character)) {
-      // we return an answer only if we find something
-      // otherwise no hover information is given
-      return {
-        contents: names[i].text
-      };
+  if( names !== undefined ){
+    for (var i = 0; i < names.length; i++) {
+      if (names[i].line === position.line
+        && (names[i].start <= position.character && names[i].end >= position.character)) {
+        // we return an answer only if we find something
+        // otherwise no hover information is given
+        return {
+          contents: names[i].text
+        };
+      }
     }
   }
+  return {
+    contents: "Example Hover"
+  };
 });
 
 function fromUri(document: { uri: string; }) {
   return Files.uriToFilePath(document.uri);
 }
 
-function loadColors(): Array<string> {
-  let colorsFile = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'colors')).toString();
-  let colors = colorsFile.split(/\r?\n/g);
+// function loadColors(): Array<string> {
+//   let colorsFile = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'colors')).toString();
+//   let colors = colorsFile.split(/\r?\n/g);
 
-  return colors;
-}
+//   return colors;
+// }
 
-function loadShapes(): Array<string> {
-  let shapesFile = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'shapes')).toString();
-  let shapes = shapesFile.split(/\r?\n/g);
+// function loadShapes(): Array<string> {
+//   let shapesFile = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'shapes')).toString();
+//   let shapes = shapesFile.split(/\r?\n/g);
 
-  return shapes;
-}
+//   return shapes;
+// }
